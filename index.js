@@ -13,21 +13,25 @@ class Transaction {
     this.amount = amount;
     this.account = account;
   }
+
+  commit() {
+    this.account.balance += this.value;
+  }
+
 }
 
 class Deposit extends Transaction {
 
-  commit() {
-    this.account.balance += this.amount;
+  get value() {
+    return this.amount;
   }
-
 }
 
 class Withdrawal extends Transaction {
 
   // new method learned: commit method is called in order to finalize and apply that transaction to the account's balance.
-  commit() {
-    this.account.balance -= this.amount;
+  get value() {
+    return -this.amount;
   }
 }
 
@@ -50,6 +54,7 @@ t3 = new Deposit(150, myAccount);
 t3.commit();
 console.log(`Transaction 3: `, t3);
 
+console.log(`My ending balance: `, myAccount.balance)
 
 
 /****
@@ -66,4 +71,10 @@ console.log(`Transaction 3: `, t3);
 * We want Deposit and Withdrawal to only contain the code that it absolutely has to. The remaining code in the subclasses is logic that could not be shared with the others.
 * The way we create a new Withdrawal or Deposit has not changed; the interface has stayed the same. What has changed is how we're implementing these classes.
 * Our driver code, which uses the classes, has zero need to change. This is an example of good refactoring.
+****/
+
+/****
+* Change 2 - Refactor commit
+* Instead of having commit defined in each subclass, we defined a getter method called value in each subclass.
+* Now that value contains a positive or negative amount, we can simply add value instead of having to decide in the commit. It's therefore possible to now share the commit method by moving it into the superclass.
 ****/
