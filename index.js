@@ -1,11 +1,25 @@
 // let balance = 500;
 
 class Account {
-  constructor(username) {
-    this.username = username,
+
+  constructor() {
     // Have the account balance start at $0 since that makes more sense.
-    this.balance = 0;
+    this.transactions = [];
   }
+
+  get balance() {
+    let balance = 0;
+    // Calculate the balance using the transaction objects.
+    for (let t of this.transactions) {
+      balance += t.value;
+    }
+    return balance;
+  }
+
+  addTransaction(transaction) {
+    this.transactions.push(transaction);
+  }
+
 }
 
 class Transaction {
@@ -15,23 +29,34 @@ class Transaction {
   }
 
   commit() {
-    this.account.balance += this.value;
+    if (!this.isAllowed()) return false;
+    // Keep track of the time of the transaction
+    this.time = new Date();
+    // Add the transaction to the account
+    this.account.addTransaction(this);
+    return true;
   }
 
 }
 
 class Deposit extends Transaction {
-
   get value() {
     return this.amount;
+  }
+
+  isAllowed() {
+    return true;
   }
 }
 
 class Withdrawal extends Transaction {
-
   // new method learned: commit method is called in order to finalize and apply that transaction to the account's balance.
   get value() {
     return -this.amount;
+  }
+
+  isAllowed() {
+    return (this.account.balance - this.amount >= 0);
   }
 }
 
@@ -39,22 +64,30 @@ class Withdrawal extends Transaction {
 // DRIVER CODE BELOW
 // We use the code below to "drive" the application logic above and make sure it's working as expected
 
-const myAccount = new Account('snow-patrol')
+const myAccount = new Account();
+
 console.log('Starting Account Balance: ', myAccount.balance);
 
-t1 = new Withdrawal(50.25, myAccount);
-t1.commit();
-console.log('Transaction 1:', t1);
+console.log('Attempting to withdraw even $1 should fail...');
+t1 = new Withdrawal(1, myAccount);
+console.log('Commit result: ', t1.commit());
+console.log('Accout balance: ', myAccount.balance);
 
-t2 = new Withdrawal(9.99, myAccount);
-t2.commit();
-console.log('Transaction 2:', t2);
+console.log('Depositing should succeed...');
+t2 = new Deposit(9.99, myAccount);
+console.log('Commit result: ', t2.commit());
+console.log('Accout balance: ', myAccount.balance);
 
-t3 = new Deposit(150, myAccount);
-t3.commit();
-console.log(`Transaction 3: `, t3);
+console.log('Withdrawal for 9.99 should be allowed...');
+t3 = new Withdrawal(9.99, myAccount);
+console.log('Commit result: ', t3.commit());
+console.log('Accout balance: ', myAccount.balance);
 
-console.log(`My ending balance: `, myAccount.balance)
+console.log(`My ending balance: `, myAccount.balance);
+console.log("Lookings like I'm broke again");
+
+console.log('Account Transaction History: ', myAccount.transactions);
+
 
 
 /****
@@ -74,7 +107,12 @@ console.log(`My ending balance: `, myAccount.balance)
 ****/
 
 /****
-* Change 2 - Refactor commit
+* Change 3 - Refactor commit
 * Instead of having commit defined in each subclass, we defined a getter method called value in each subclass.
 * Now that value contains a positive or negative amount, we can simply add value instead of having to decide in the commit. It's therefore possible to now share the commit method by moving it into the superclass.
 ****/
+
+/****
+ * Change 4 and 5
+ * Didn't understand anything.
+ */
